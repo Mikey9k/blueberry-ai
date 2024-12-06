@@ -884,9 +884,9 @@ router.route('/').post(async (req, res) => {
     const imageBuffer = fs.readFileSync(outputPath);
     const imageBase64 = imageBuffer.toString('base64');
 
-    // const outputPathBraid = await generateVisualFromQuoteBraid(prompt);
-    // const imageBufferBraid = fs.readFileSync(outputPathBraid);
-    // const imageBase64Braid = imageBufferBraid.toString('base64');
+    const outputPathBraid = await generateVisualFromQuoteBraid(prompt);
+    const imageBufferBraid = fs.readFileSync(outputPathBraid);
+    const imageBase64Braid = imageBufferBraid.toString('base64');
 
     // const outputPathIceberg = await generateVisualFromQuoteIceberg(prompt);
     // const imageBufferIceberg = fs.readFileSync(outputPathIceberg);
@@ -904,30 +904,30 @@ router.route('/').post(async (req, res) => {
     // const tetrisImageBuffer = fs.readFileSync(tetrisOutputPath);
     // const tetrisImageBase64 = tetrisImageBuffer.toString('base64');
 
-    // const fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
-    // const fishImageBuffer = fs.readFileSync(fishOutputPath);
-    // const fishImageBase64 = fishImageBuffer.toString('base64');
+    const fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
+    const fishImageBuffer = fs.readFileSync(fishOutputPath);
+    const fishImageBase64 = fishImageBuffer.toString('base64');
 
     // const doorOutputPath = await generateVisualFromQuoteDoor(prompt, "url(#grad1)");
     // const doorImageBuffer = fs.readFileSync(doorOutputPath);
     // const doorImageBase64 = doorImageBuffer.toString('base64');
 
-    // const newtonOutputPath = await generateVisualFromQuoteNewton(prompt, "rgb(123, 104, 238)");
-    // const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
-    // const newtonImageBase64 = newtonImageBuffer.toString('base64');
+    const newtonOutputPath = await generateVisualFromQuoteNewton(prompt, "rgb(123, 104, 238)");
+    const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
+    const newtonImageBase64 = newtonImageBuffer.toString('base64');
 
     // Return the base64-encoded image in the response
     // res.status(200).json({ photo: imageBase64, braid: imageBase64Braid, iceberg: imageBase64Iceberg, insight: imageBase64Insight, hunt: huntImageBase64, tetris: tetrisImageBase64, fish: fishImageBase64, door: doorImageBase64, newton: newtonImageBase64 });
     res.status(200).json({ 
         photo: imageBase64, 
-        braid: "", 
+        braid: imageBase64Braid, 
         iceberg: "", 
         insight: "", 
         hunt: "", 
         tetris: "", 
-        fish: "", 
+        fish: fishImageBase64, 
         door: "", 
-        newton: "" 
+        newton: newtonImageBase64 
     });
 
     // res.status(200).json({ photo: image });

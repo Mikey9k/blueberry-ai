@@ -1,6 +1,19 @@
 import './App.css';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
+
+import { RefreshCw } from "lucide-react";
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 // import { useNavigate } from 'react-router-dom';
 
 import preview from './assets/preview.png';
@@ -30,6 +43,8 @@ function App() {
   });
 
   const [selectedTheme, setSelectedTheme] = useState(''); 
+  const [selectedImage, setSelectedImage] = useState('photo');
+
 
   useEffect(() => {
     if (selectedTheme) {
@@ -102,208 +117,160 @@ function App() {
     }
   }
 
+  const images = [
+    { key: 'photo', src: form.photo, alt: 'Photo' },
+    { key: 'braid', src: form.braid, alt: 'Braid' },
+    { key: 'fish', src: form.fish, alt: 'Fish' },
+    { key: 'newton', src: form.newton, alt: 'Newton' },
+  ];
+  
+
   return (
-    <div>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Generate Beautiful Visuals From Text</h1>
-        <form className="w-full max-w-md bg-white p-8 rounded-lg shadow-md" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Enter text here"
-            className="w-full p-4 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, prompt: e.target.value })}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="w-full bg-violet-200 p-4 flex flex-col justify-center items-center">
+      <img src="/src/assets/image.png" alt="Banner Image" className="h-16 mb-4" />
+      <h1 className="text-3xl font-bold text-gray-800">Generate Beautiful Visuals From Text</h1>
+    </div>
+      <div className="w-full max-w-xl mt-3">
+        <form className="flex items-center space-x-4 p-2">
+          <Textarea
+            ref={(textarea) => {
+              if (textarea) {
+                textarea.style.height = "0px";
+                textarea.style.height = textarea.scrollHeight + "px";
+              }
+            }}
+            placeholder="Quote..."
+            className="flex-grow p-4 text-lg placeholder:text-lg border border-gray-300 rounded-lg"
+            style={{ fontSize: '1rem' }}
+            onChange={(e) => setForm({ ...form, prompt: e.target.value })}
           />
-          <button
+          <Button
             type="button"
-            className="w-full bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition duration-300"
+            className="bg-blue-500 text-white p-4 text-lg rounded-lg hover:bg-blue-600 transition duration-300"
             onClick={generateTheme}
           >
             {generatingTheme ? 'Generating...' : 'Generate'}
-          </button>
-
-          <p className="text-gray-700 mt-6 text-center">Pick which perspective fits the best.</p>
-
+          </Button>
         </form>
-
-
-        <div className="flex flex-col items-center space-y-4 mt-6">
-          <button
-            className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme1 || 'Button 1')}
-          >
-            {themes.theme1 || 'Button 1'}
-          </button>
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme2 || 'Button 2')}
-          >
-            {themes.theme2 || 'Button 2'}
-          </button>
-          <button
-            className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme3 || 'Button 3')}
-          >
-            {themes.theme3 || 'Button 3'}
-          </button>
-        </div>
-
-
-        <div className="relative bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-128 p-3 h-128 justify-center items-center mt-4">
-          {form.photo ? (
-            <img
-              src={form.photo}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {/* {form.braid ? (
-            <img
-              src={form.braid}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.iceberg ? (
-            <img
-              src={form.iceberg}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.insight ? (
-            <img
-              src={form.insight}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {generatingImg && (
-            <div className="absolute inset-0 z-0 flex justify-center items-center bg-[rgba(0,0,0,0.5)] rounded-lg">
-              <Loader />
-            </div>
-          )}
-          {form.hunt ? (
-            <img
-              src={form.hunt}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.tetris ? (
-            <img
-              src={form.tetris}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.fish ? (
-            <img
-              src={form.fish}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.door ? (
-            <img
-              src={form.door}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )}
-          {form.newton ? (
-            <img
-              src={form.newton}
-              alt={form.prompt}
-              className="w-full h-full object-contain"
-            />
-          ) : (
-            <img
-              src={preview}
-              alt="preview"
-              className="w-full h-full object-contain opacity-40"
-            />
-          )} */}
-
-
-
-          
-          {generatingImg && (
-            <div className="absolute inset-0 z-0 flex justify-center items-center bg-[rgba(0,0,0,0.5)] rounded-lg">
-              <Loader />
-            </div>
-          )}
-        </div>
-
-{/* 
-        <div className="mt-5 flex gap-5">
-          <button
-            type="button"
-            onClick={generateImage}
-            className=" text-white bg-green-700 font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center"
-          >
-            {generatingImg ? 'Generating...' : 'Generate'}
-          </button>
-        </div> */}
-
-        
       </div>
 
+      <div className="flex flex-col items-center space-y-4 mt-4">
+        <div className="flex space-x-4">
+          <Button
+            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
+            onClick={() => handleButtonClick(themes.theme1)}
+          >
+            {themes.theme1 || 'Perspective 1'}
+          </Button>
+          <Button
+            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
+            onClick={() => handleButtonClick(themes.theme2)}
+          >
+            {themes.theme2 || 'Perspective 2'}
+          </Button>
+          <Button
+            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
+            onClick={() => handleButtonClick(themes.theme3)}
+          >
+            {themes.theme3 || 'Perspective 3'}
+          </Button>
+        </div>
+      </div>
 
+      <div className="flex mt-6">
+        <div className="flex flex-col gap-4 p-4">
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Style" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Text Colour" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Font" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Domain" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="relative bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-96 p-3 h-96 flex justify-center items-center mt-4">
+          {form[selectedImage] ? (
+            <img
+              src={form[selectedImage]}
+              alt={form.prompt}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <img
+              src={preview}
+              alt="preview"
+              className="w-full h-full object-contain opacity-40"
+            />
+          )}
+          {generatingImg && (
+            <div className="absolute inset-0 z-0 flex justify-center items-center bg-[rgba(0,0,0,0.5)] rounded-lg">
+              <Loader />
+            </div>
+          )}
+        </div>
 
- 
+        <div className="pl-4">
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            {images.map((image) => (
+              <Button
+                key={image.key}
+                className={`w-32 h-32 m-0 p-2 ${selectedImage === image.key ? 'border-4 border-blue-500' : ''}`}
+                onClick={() => setSelectedImage(image.key)}
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  className="w-full h-full object-cover"
+                />
+              </Button>
+            ))}
+          </div>
+        </div>
+
+      </div>
+
+      <div className="flex space-x-4 mt-4">
+        <Button className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition duration-300">
+          Save
+        </Button>
+        <Button className="bg-gray-500 text-white p-4 rounded-lg hover:bg-gray-600 transition duration-300">
+          <RefreshCw className="w-5 h-5" />
+        </Button>
+      </div>
     </div>
-
-    
-          
-
   );
 }
 
