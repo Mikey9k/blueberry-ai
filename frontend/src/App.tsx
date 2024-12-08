@@ -45,6 +45,9 @@ function App() {
   const [selectedTheme, setSelectedTheme] = useState(''); 
   const [selectedImage, setSelectedImage] = useState('photo');
 
+  const [color, setColor] = useState('');
+  const [formality, setFormality] = useState('');
+
 
   useEffect(() => {
     if (selectedTheme) {
@@ -53,9 +56,54 @@ function App() {
   }, [selectedTheme]);
 
 
-  const handleSubmit = () => {
-    console.log('Submit');
-  }
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [submittedRating, setSubmittedRating] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [feedbackText, setFeedbackText] = useState('');
+
+  const handleStarClick = (rating: number) => {
+    setSelectedRating(rating);
+  };
+
+  const handleSubmit = async () => {
+    if (selectedRating > 0) {
+      setSubmittedRating(selectedRating);
+      setIsSubmitted(true);
+    } else {
+      alert('Please select a rating before submitting.');
+    }
+
+    const feedbackData = {
+      quote: form.prompt,
+      theme: selectedTheme,
+      color: color,
+      formality: formality,
+      submittedRating: selectedRating,
+      feedbackText: feedbackText,
+    };
+
+    console.log(JSON.stringify(feedbackData));
+
+
+    try {
+      const response = await fetch('http://localhost:3333/api/submitFeedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      console.log('Feedback submitted successfully');
+    } catch (error) {
+      console.error('There was a problem with the submission:', error);
+    }
+  };
 
   const handleButtonClick = (theme: string) => {
     console.log('Button clicked with theme:', theme);
@@ -64,6 +112,19 @@ function App() {
     // Add more actions here
     
     // You can add more actions as needed
+  };
+
+  const handleSave = () => {
+    if (selectedImage && form[selectedImage]) {
+      const link = document.createElement('a');
+      link.href = form[selectedImage];
+      link.download = 'image.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      console.error('No image selected');
+    }
   };
 
   const generateImage = async () => {
@@ -76,7 +137,7 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme }),
+          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme, color: color, formality: formality }),  
         });
         const data = await response.json();
         setForm({ 
@@ -185,19 +246,19 @@ function App() {
               <SelectValue placeholder="Style" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">Coming Soon</SelectItem>
+              {/* <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem> */}
             </SelectContent>
           </Select>
-          <Select>
+          <Select onValueChange={(value) => setColor(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Text Colour" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="blue">Blue</SelectItem>
+              <SelectItem value="red">Red</SelectItem>
+              <SelectItem value="green">Green</SelectItem>
             </SelectContent>
           </Select>
           <Select>
@@ -205,21 +266,24 @@ function App() {
               <SelectValue placeholder="Font" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="light">Coming Soon</SelectItem>
+              {/* <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem> */}
             </SelectContent>
           </Select>
-          <Select>
+          <Select onValueChange={(value) => setFormality(value)}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Domain" />
+              <SelectValue placeholder="Formality" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              <SelectItem value="neutral">Neutral</SelectItem>
+              <SelectItem value="informal">Informal</SelectItem>
+              <SelectItem value="formal">Formal</SelectItem>
             </SelectContent>
           </Select>
+          <Button className="bg-gray-500 text-white p-4 rounded-lg hover:bg-gray-600 transition duration-300" onClick={generateImage}>
+            <RefreshCw className="w-5 h-5" />
+          </Button>
         </div>
         <div className="relative bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-96 p-3 h-96 flex justify-center items-center mt-4">
           {form[selectedImage] ? (
@@ -263,13 +327,67 @@ function App() {
       </div>
 
       <div className="flex space-x-4 mt-4">
-        <Button className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition duration-300">
+        <Button
+          className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          onClick={handleSave}
+        >
           Save
         </Button>
-        <Button className="bg-gray-500 text-white p-4 rounded-lg hover:bg-gray-600 transition duration-300">
-          <RefreshCw className="w-5 h-5" />
-        </Button>
+
       </div>
+
+      <div className="flex justify-center items-center mt-8">
+        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4">Provide your Feedback</h3>
+
+          {isSubmitted && (
+            <div id="result" className="mt-4 text-green-600 text-lg font-bold" aria-live="polite">
+              Thank you! You rated: <span id="submitted-rating">{submittedRating}</span> stars.
+            </div>
+          )}
+
+          <div id="rating" className="flex space-x-2 mb-4">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <svg
+                key={value}
+                className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${selectedRating >= value ? 'text-yellow-400' : ''}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                onClick={() => handleStarClick(value)}
+                aria-label={`${value} star${value > 1 ? 's' : ''}`}
+                role="button"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
+              </svg>
+            ))}
+          </div>
+
+          <div id="rating-text" className="text-lg mb-4">
+            Rating: {selectedRating} star{selectedRating > 1 ? 's' : ''}
+          </div>
+
+          <textarea
+            id="feedback-text"
+            className="w-full p-2 mb-4 border border-gray-300 rounded-md"
+            rows="4"
+            placeholder="Write your detailed feedback here..."
+            value={feedbackText}
+            onChange={(e) => setFeedbackText(e.target.value)}
+          ></textarea>
+
+          <button
+            id="submit-btn"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            onClick={handleSubmit}
+            disabled={selectedRating === 0}
+          >
+            Submit Rating
+          </button>
+
+
+        </div>
+      </div>
+
     </div>
   );
 }

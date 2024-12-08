@@ -15,41 +15,56 @@ const openai = new OpenAI();
 
 // const openai = new OpenAIApi(configuration);
 
-async function generateVisualFromQuote(quote, theme) {
+async function generateVisualFromQuote(quote, theme, formality) {
+
+    console.log(quote, theme, formality);
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o", // Ensure you are using the correct model
         messages: [
             {
                 role: "system",
                 content: `
-                    I'm building a tool called Blueberry AI, a web-based, AI-powered platform that transforms quotes into visually engaging and easily understandable representations.
-
-                    I will provide you with a quote and a theme. Your task is to extract key concepts that align with A, B, and C, ensuring they reflect the visual’s metaphorical meaning within the context of the given theme (this is crucial). The theme should strongly influence how you interpret the quote and select the key words.
-
-                    The metaphor is as follows: to move from A (Undesired Initial State) to B (Desired End State), one must build and rely on C (the foundation or bridge enabling the transition).
-
+                    You are assisting with Blueberry AI, a web-based, AI-powered platform designed to transform quotes into visually engaging and easily understandable representations.
+    
+                    Task Instructions:
+                    - I will provide you with a quote, a theme, and a formality level.
+                    - Your goal is to extract key concepts that align with A, B, and C, ensuring they reflect the visual’s metaphorical meaning within the context of the provided theme.
+    
+                    Metaphor Framework:
+                    - A: The Undesired Initial State (before the transition).
+                    - B: The Desired End State (after the transition).
+                    - C: The Foundation or Bridge enabling the transition from A to B.
+    
                     Guidelines:
-                    Use the theme as the guiding lens to determine the most relevant and meaningful interpretations of A, B, and C.
-                    Represent A, B, and C with a maximum of 2–3 words. If a single word doesn't suffice, you can use a compound phrase (e.g., "X and Y").
-                    Ensure the chosen words clearly convey the essence of the visual when presented alone, without additional context.
-                    Capitalize the first letter of each word in A, B, and C.
+                    1. Use the theme as the guiding lens to determine the most meaningful interpretations of A, B, and C.
+                    2. Represent A, B, and C with a maximum of three words:
+                       - Compound phrases are acceptable if necessary (e.g., "X and Y").
+                       - Capitalize the first letter of each word.
+                    3. The chosen words should clearly convey the essence of the visual metaphor when presented alone, without additional context.
+                    4. The theme should strongly influence how you interpret the quote and select the key words.
+    
+                    Formality Levels:
+                    - **Neutral**: A balance between formal and informal language.
+                    - **Formal**: Professional and polished language.
+                    - **Informal**: Incorporate casual, modern slang (e.g., TikTok/Gen Z style).
+    
                     Reminder:
-                    The theme is not just a backdrop but an integral part of your interpretation. The selected words must align with the theme and ensure the meaning of the visual resonates strongly within that framework.
-
-                    Think deeply and choose terms that effectively encapsulate the quote, the metaphor, and the theme.
+                    The theme is not just context; it is integral to your interpretation. The selected words must align with the theme and ensure the meaning of the visual resonates within that framework. Think deeply and select terms that effectively encapsulate the quote, metaphor, and theme.
                 `
             },
             {
                 role: "user",
-                content: quote
+                content: quote // Provide the quote dynamically
             },
             {
                 role: "user",
-                content: theme
+                content: theme // Provide the theme dynamically
+            },
+            {
+                role: "user",
+                content: formality // Provide the formality level dynamically
             }
-
         ],
-        // description: "The response should contain the key words that best match A, B, and C from the meaning of the visual. If the user was only presented with A, B, and C, they should be able to understand the meaning of the visual.", 
         response_format: {
             type: "json_schema",
             json_schema: {
@@ -58,16 +73,16 @@ async function generateVisualFromQuote(quote, theme) {
                     type: "object",
                     properties: {
                         subpart1: {
-                            // description: "Part A (The Initial State. Before Bridge.). Capitalize the first letter of each word.",
-                            type: "string"
+                            type: "string", // A (Undesired Initial State)
+                            description: "Represents the Undesired Initial State (A). Capitalize the first letter of each word."
                         },
                         subpart2: {
-                            // description: "Part B (Desired End State.) Capitalize the first letter of each word.",
-                            type: "string"
+                            type: "string", // B (Desired End State)
+                            description: "Represents the Desired End State (B). Capitalize the first letter of each word."
                         },
                         subpart3: {
-                            // description: "Part C (Bridge.) Capitalize the first letter of each word.",
-                            type: "string"
+                            type: "string", // C (Bridge)
+                            description: "Represents the Foundation or Bridge (C) enabling the transition. Capitalize the first letter of each word."
                         }
                     },
                     additionalProperties: false
@@ -75,8 +90,10 @@ async function generateVisualFromQuote(quote, theme) {
             }
         }
     });
+    
 
     console.log(completion.choices[0].message);
+    // console.log("message")
 
     // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
@@ -566,6 +583,14 @@ async function generateVisualFromQuoteTetris(prompt, color) {
 }
 
 async function generateVisualFromQuoteFish(prompt, color) {
+    
+    if (color === '') {
+        color = 'green';
+        console.log("color is empty");
+    } 
+
+    console.log(color);
+    
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -643,6 +668,7 @@ async function generateVisualFromQuoteFish(prompt, color) {
 }
 
 async function generateVisualFromQuoteDoor(prompt, color) {
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
@@ -861,7 +887,7 @@ router.route('/').get((req, res) => {
 
 router.route('/').post(async (req, res) => {
   try {
-    const { prompt, theme } = req.body;
+    const { prompt, theme, color, formality } = req.body;
     console.log("a")
     console.log(prompt, theme);
     console.log("a")
@@ -880,7 +906,7 @@ router.route('/').post(async (req, res) => {
     
     // console.log(completion.choices[0].message);
 
-    const outputPath = await generateVisualFromQuote(prompt, theme);
+    const outputPath = await generateVisualFromQuote(prompt, theme, formality);
     const imageBuffer = fs.readFileSync(outputPath);
     const imageBase64 = imageBuffer.toString('base64');
 
@@ -904,7 +930,15 @@ router.route('/').post(async (req, res) => {
     // const tetrisImageBuffer = fs.readFileSync(tetrisOutputPath);
     // const tetrisImageBase64 = tetrisImageBuffer.toString('base64');
 
-    const fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
+
+    // let fishOutputPath;
+    // if (color !== '') {
+    //     fishOutputPath = await generateVisualFromQuoteFish(prompt, color);
+    // } else {
+    //     fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
+    // }
+
+    const fishOutputPath = await generateVisualFromQuoteFish(prompt, color);
     const fishImageBuffer = fs.readFileSync(fishOutputPath);
     const fishImageBase64 = fishImageBuffer.toString('base64');
 
