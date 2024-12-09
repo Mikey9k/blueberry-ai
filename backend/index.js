@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import mongoose, { model } from 'mongoose';
 import MongoClient from 'mongodb';
 
 import postRoutes from './routes/postRoutes.js';
@@ -35,23 +35,26 @@ const feedbackSchema = new mongoose.Schema({
     color: { type: String, required: false },
     formality: { type: String, required: false },
     submittedRating: { type: Number, required: true, min: 1, max: 5 },
-    feedbackText: { type: String, required: false },
-  });
+    feedbackText: { type: Object, required: false },
+    text: { type: String, required: false },
+    template: { type: String, required: false },
+    model: { type: String, required: false },
+});
   
-  const Feedback = mongoose.model('Feedback', feedbackSchema);
-  
-  app.post('/api/submitFeedback', async (req, res) => {
+const Feedback = mongoose.model('Feedback', feedbackSchema);
+
+app.post('/api/submitFeedback', async (req, res) => {
     try {
         const feedback = await Feedback.create(req.body); // Create and save the document in one step
         res.status(201).send(feedback); 
     } catch (error) {
-      console.error('Error saving feedback:', error);
-      if (error.name === 'ValidationError') {
+    console.error('Error saving feedback:', error);
+    if (error.name === 'ValidationError') {
         return res.status(400).send({ error: 'Validation Error', details: error.errors });
-      }
-      res.status(500).send({ error: 'Internal Server Error' });
     }
-  });
+    res.status(500).send({ error: 'Internal Server Error' });
+    }
+});
 
 app.listen(3333, () => {
     console.log('Server started on port 3333');

@@ -10,6 +10,7 @@ const router = express.Router();
 
 import OpenAI from 'openai';
 import { transform } from 'typescript';
+// import text from 'body-parser/lib/types/text';
 
 const openai = new OpenAI();
 
@@ -143,7 +144,7 @@ async function generateVisualFromQuote(quote, theme, formality) {
         throw error;
       }
 
-    return outputPath;
+    return [outputPath, completion.choices[0].message, completion.model];
 }
 
 async function generateVisualFromQuoteBraid(prompt) {
@@ -239,7 +240,7 @@ async function generateVisualFromQuoteBraid(prompt) {
         throw error;
       }
 
-    return outputPath;
+    return [outputPath, completion.choices[0].message, completion.model];
 }
 
 async function generateVisualFromQuoteIceberg(prompt) {
@@ -664,7 +665,7 @@ async function generateVisualFromQuoteFish(prompt, color) {
         throw error;
     }
 
-    return outputPath;
+    return [outputPath, completion.choices[0].message, completion.model];
 }
 
 async function generateVisualFromQuoteDoor(prompt, color) {
@@ -825,7 +826,7 @@ async function generateVisualFromQuoteNewton(prompt, color) {
         throw error;
     }
 
-    return outputPath;
+    return [outputPath, completion.choices[0].message, completion.model];
 }
 
 
@@ -906,11 +907,11 @@ router.route('/').post(async (req, res) => {
     
     // console.log(completion.choices[0].message);
 
-    const outputPath = await generateVisualFromQuote(prompt, theme, formality);
+    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality);
     const imageBuffer = fs.readFileSync(outputPath);
     const imageBase64 = imageBuffer.toString('base64');
 
-    const outputPathBraid = await generateVisualFromQuoteBraid(prompt);
+    const [outputPathBraid, textBraid, modelBraid ] = await generateVisualFromQuoteBraid(prompt);
     const imageBufferBraid = fs.readFileSync(outputPathBraid);
     const imageBase64Braid = imageBufferBraid.toString('base64');
 
@@ -938,7 +939,7 @@ router.route('/').post(async (req, res) => {
     //     fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
     // }
 
-    const fishOutputPath = await generateVisualFromQuoteFish(prompt, color);
+    const [fishOutputPath, textFish, modelFish] = await generateVisualFromQuoteFish(prompt, color);
     const fishImageBuffer = fs.readFileSync(fishOutputPath);
     const fishImageBase64 = fishImageBuffer.toString('base64');
 
@@ -946,7 +947,7 @@ router.route('/').post(async (req, res) => {
     // const doorImageBuffer = fs.readFileSync(doorOutputPath);
     // const doorImageBase64 = doorImageBuffer.toString('base64');
 
-    const newtonOutputPath = await generateVisualFromQuoteNewton(prompt, "rgb(123, 104, 238)");
+    const [newtonOutputPath, textNewton, modelNewton] = await generateVisualFromQuoteNewton(prompt, "rgb(123, 104, 238)");
     const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
     const newtonImageBase64 = newtonImageBuffer.toString('base64');
 
@@ -961,7 +962,15 @@ router.route('/').post(async (req, res) => {
         tetris: "", 
         fish: fishImageBase64, 
         door: "", 
-        newton: newtonImageBase64 
+        newton: newtonImageBase64,
+        textBridge: textBridge,
+        textBraid: textBraid,
+        textFish: textFish,
+        textNewton: textNewton,
+        modelBridge: modelBridge,
+        modelBraid: modelBraid,
+        modelFish: modelFish,
+        modelNewton: modelNewton
     });
 
     // res.status(200).json({ photo: image });

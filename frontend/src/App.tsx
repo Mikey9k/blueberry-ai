@@ -18,6 +18,7 @@ import {
 
 import preview from './assets/preview.png';
 import Loader from './components/Loader';
+import { text } from 'stream/consumers';
 
 function App() {
   const [form, setForm] = useState({
@@ -31,6 +32,14 @@ function App() {
     fish: '',
     door: '',
     newton: '',
+    textBridge: '',
+    textBraid: '',
+    textFish: '',
+    textNewton: '',
+    modelBridge: '',
+    modelBraid: '',
+    modelFish: '',
+    modelNewton: '',
   });
 
   const [generatingImg, setGeneratingImg] = useState(false);
@@ -74,6 +83,26 @@ function App() {
       alert('Please select a rating before submitting.');
     }
 
+    let text = '';
+    let model = '';
+
+    if (selectedImage === 'photo') {
+      text = form.textBridge;
+      model = form.modelBridge;
+    } else if (selectedImage === 'braid') {
+      text = form.textBraid;
+      model = form.modelBraid;
+    } else if (selectedImage === 'fish') {
+      text = form.textFish;
+      model = form.modelFish;
+    } else if (selectedImage === 'newton') {
+      text = form.textNewton;
+      model = form.modelNewton;
+    }
+
+
+    console.log(text, selectedImage);
+
     const feedbackData = {
       quote: form.prompt,
       theme: selectedTheme,
@@ -81,9 +110,13 @@ function App() {
       formality: formality,
       submittedRating: selectedRating,
       feedbackText: feedbackText,
+      text: JSON.stringify(text),
+      template: selectedImage,
+      model: model,
     };
 
     console.log(JSON.stringify(feedbackData));
+    console.log("Attempting to submit feedback");
 
 
     try {
@@ -142,7 +175,9 @@ function App() {
         const data = await response.json();
         setForm({ 
           ...form, photo: `data:image/jpeg;base64,${data.photo}`, braid: `data:image/jpeg;base64,${data.braid}`, iceberg: `data:image/jpeg;base64,${data.iceberg}`, insight: `data:image/jpeg;base64,${data.insight}`, hunt: `data:image/jpeg;base64,${data.hunt}`,
-          tetris: `data:image/jpeg;base64,${data.tetris}`, fish: `data:image/jpeg;base64,${data.fish}`, door: `data:image/jpeg;base64,${data.door}`, newton: `data:image/jpeg;base64,${data.newton}`
+          tetris: `data:image/jpeg;base64,${data.tetris}`, fish: `data:image/jpeg;base64,${data.fish}`, door: `data:image/jpeg;base64,${data.door}`, newton: `data:image/jpeg;base64,${data.newton}`,
+          textBridge: data.textBridge, textBraid: data.textBraid, textFish: data.textFish, textNewton: data.textNewton,
+          modelBridge: data.modelBridge, modelBraid: data.modelBraid, modelFish: data.modelFish, modelNewton: data.modelNewton,
         });  
       } catch (error) {
         console.error(error);
