@@ -16,10 +16,13 @@ const openai = new OpenAI();
 
 // const openai = new OpenAIApi(configuration);
 
-async function generateVisualFromQuote(quote, theme, formality, color = "white") {
+async function generateVisualFromQuote(quote, theme, formality, color = "white", style) {
     // if (!quote || !theme || !formality) {
     //     throw new Error("Quote, theme, and formality are required parameters.");
     // }
+    if (color === "") {
+        color = "white";
+    }
 
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
 
@@ -78,29 +81,43 @@ async function generateVisualFromQuote(quote, theme, formality, color = "white")
 
     console.log("Extracted elements:", { subpart1, subpart2, subpart3, summary });
 
-    const templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/template.png');
-    const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/output.png');
+    console.log("Style:", style);
 
-    const escapeHtml = (unsafe) => {
-        return unsafe
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    };
+    let templatePath;
+let yOffset = 0;
 
-    const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
+if (style === 'sketch') {
+    templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/Bridge-Trspt-8.png');
+    yOffset = -80;
 
-    const svgOverlay = `
-        <svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
-            <text x="200" y="380" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart1)}</text>
-            <text x="750" y="380" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart2)}</text>
-            <text x="500" y="610" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart3)}</text>
-            <text x="500" y="820" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">Theme: ${theme}</text>
-            ${lines.map((line, index) => `<text x="500" y="${870 + index * 30}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">${escapeHtml(line.trim())}</text>`).join('')}
-        </svg>
-    `;
+    if (color === "white") {
+        color = "black";
+    }
+} else {
+    templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/template.png'); // Default template
+}
+const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/output.png');
+
+const escapeHtml = (unsafe) => {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
+const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
+
+const svgOverlay = `
+    <svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
+        <text x="200" y="${380 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart1)}</text>
+        <text x="750" y="${380 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart2)}</text>
+        <text x="500" y="${610 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart3)}</text>
+        <text x="500" y="${820 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">Theme: ${theme}</text>
+        ${lines.map((line, index) => `<text x="500" y="${870 + index * 30 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">${escapeHtml(line.trim())}</text>`).join('')}
+    </svg>
+`;
 
     try {
         if (!svgOverlay || typeof svgOverlay !== "string") {
@@ -120,6 +137,9 @@ async function generateVisualFromQuote(quote, theme, formality, color = "white")
 }
 
 async function generateVisualFromQuoteBraid(quote, theme, formality, color = "black") {
+    if (color === "") {
+        color = "black";
+    }
     // if (!quote || !theme || !formality) {
     //     throw new Error("Quote, theme, and formality are required parameters.");
     // }
@@ -225,7 +245,6 @@ async function generateVisualFromQuoteBraid(quote, theme, formality, color = "bl
         throw error;
     }
 }
-
 
 async function generateVisualFromQuoteIceberg(prompt) {
     const completion = await openai.chat.completions.create({
@@ -571,6 +590,9 @@ async function generateVisualFromQuoteFish(quote, theme, formality, color = "whi
     // if (!quote || !theme || !formality) {
     //     throw new Error("Quote, theme, and formality are required parameters.");
     // }
+    if (color === "") {
+        color = "white";
+    }
 
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
 
@@ -754,6 +776,9 @@ async function generateVisualFromQuoteNewton(quote, theme, formality, color = "w
     // if (!quote || !theme || !formality) {
     //     throw new Error("Quote, theme, and formality are required parameters.");
     // }
+    if (color === "") {
+        color = "white";
+    }
 
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
 
@@ -900,9 +925,9 @@ router.route('/').get((req, res) => {
 
 router.route('/').post(async (req, res) => {
   try {
-    const { prompt, theme, color, formality } = req.body;
+    const { prompt, theme, color, formality, style } = req.body;
     console.log("a")
-    console.log(prompt, theme);
+    console.log(prompt, theme, color, formality, style);
     console.log("a")
 
 
@@ -919,7 +944,7 @@ router.route('/').post(async (req, res) => {
     
     // console.log(completion.choices[0].message);
 
-    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality, color);
+    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality, color, style);
     const imageBuffer = fs.readFileSync(outputPath);
     const imageBase64 = imageBuffer.toString('base64');
 

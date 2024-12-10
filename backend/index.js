@@ -46,14 +46,23 @@ const Feedback = mongoose.model('Feedback', feedbackSchema);
 
 app.post('/api/submitFeedback', async (req, res) => {
     try {
-        const feedback = await Feedback.create(req.body); // Create and save the document in one step
-        res.status(201).send(feedback); 
+        // Validate request body
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).send({ error: 'Bad Request', message: 'Feedback data is required' });
+        }
+
+        // Create and save the feedback document
+        const feedback = await Feedback.create(req.body);
+        console.log('Feedback submitted successfully:', feedback);
+        res.status(201).send(feedback);
     } catch (error) {
-    console.error('Error saving feedback:', error);
-    if (error.name === 'ValidationError') {
-        return res.status(400).send({ error: 'Validation Error', details: error.errors });
-    }
-    res.status(500).send({ error: 'Internal Server Error' });
+        console.error('Error saving feedback:', error);
+
+        if (error.name === 'ValidationError') {
+            return res.status(400).send({ error: 'Validation Error', details: error.errors });
+        }
+
+        res.status(500).send({ error: 'Internal Server Error', message: 'An unexpected error occurred while saving feedback' });
     }
 });
 

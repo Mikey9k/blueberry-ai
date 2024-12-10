@@ -56,6 +56,7 @@ function App() {
 
   const [color, setColor] = useState('');
   const [formality, setFormality] = useState('');
+  const [style, setStyle] = useState('');
 
 
   useEffect(() => {
@@ -114,6 +115,7 @@ function App() {
     const feedbackData = {
       quote: form.prompt,
       theme: selectedTheme,
+      style: style,
       color: color,
       formality: formality,
       visualRating: selectedRating,
@@ -179,7 +181,7 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme, color: color, formality: formality }),  
+          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme, color: color, formality: formality, style: style }),  
         });
         const data = await response.json();
         setForm({ 
@@ -285,14 +287,14 @@ function App() {
 
       <div className="flex mt-6">
         <div className="flex flex-col gap-4 p-4">
-          <Select>
+          <Select onValueChange={(value) => setStyle(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Style" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Coming Soon</SelectItem>
-              {/* <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem> */}
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="sketch">Sketch</SelectItem>
+              {/* <SelectItem value="system">System</SelectItem> */}
             </SelectContent>
           </Select>
           <Select onValueChange={(value) => setColor(value)}>
@@ -444,7 +446,7 @@ function App() {
             id="submit-btn"
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
             onClick={handleSubmit}
-            disabled={selectedRating === 0}
+            disabled={selectedRating === 0 || textRating === 0}
           >
             Submit Rating
           </button>
