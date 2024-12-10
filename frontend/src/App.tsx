@@ -66,7 +66,9 @@ function App() {
 
 
   const [selectedRating, setSelectedRating] = useState(0);
+  const [textRating, setTextRating] = useState(0);
   const [submittedRating, setSubmittedRating] = useState(0);
+  const [submittedTextRating, setSubmittedTextRating] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [feedbackText, setFeedbackText] = useState('');
@@ -75,9 +77,15 @@ function App() {
     setSelectedRating(rating);
   };
 
+  const handleTextStarClick = (rating: number) => {
+    setTextRating(rating);
+  };
+
+
   const handleSubmit = async () => {
     if (selectedRating > 0) {
       setSubmittedRating(selectedRating);
+      setSubmittedTextRating(textRating);
       setIsSubmitted(true);
     } else {
       alert('Please select a rating before submitting.');
@@ -108,7 +116,8 @@ function App() {
       theme: selectedTheme,
       color: color,
       formality: formality,
-      submittedRating: selectedRating,
+      visualRating: selectedRating,
+      textRating: textRating,
       feedbackText: feedbackText,
       text: JSON.stringify(text),
       template: selectedImage,
@@ -294,6 +303,7 @@ function App() {
               <SelectItem value="blue">Blue</SelectItem>
               <SelectItem value="red">Red</SelectItem>
               <SelectItem value="green">Green</SelectItem>
+              <SelectItem value="rgb(123, 104, 238)">Gradient</SelectItem>
             </SelectContent>
           </Select>
           <Select>
@@ -377,7 +387,7 @@ function App() {
 
           {isSubmitted && (
             <div id="result" className="mt-4 text-green-600 text-lg font-bold" aria-live="polite">
-              Thank you! You rated: <span id="submitted-rating">{submittedRating}</span> stars.
+              Thank you! You rated: <span id="submitted-rating">{submittedRating}</span> and <span id="submitted-rating">{submittedTextRating}</span> stars.
             </div>
           )}
 
@@ -398,7 +408,27 @@ function App() {
           </div>
 
           <div id="rating-text" className="text-lg mb-4">
-            Rating: {selectedRating} star{selectedRating > 1 ? 's' : ''}
+            Visual Rating: {selectedRating} star{selectedRating > 1 ? 's' : ''}
+          </div>
+
+          <div id="rating" className="flex space-x-2 mb-4">
+            {[1, 2, 3, 4, 5].map((value) => (
+              <svg
+                key={value}
+                className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${textRating >= value ? 'text-yellow-400' : ''}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                onClick={() => handleTextStarClick(value)}
+                aria-label={`${value} star${value > 1 ? 's' : ''}`}
+                role="button"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
+              </svg>
+            ))}
+          </div>
+
+          <div id="rating-text" className="text-lg mb-4">
+            Text Rating: {textRating} star{textRating > 1 ? 's' : ''}
           </div>
 
           <textarea

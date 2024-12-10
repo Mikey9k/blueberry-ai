@@ -16,55 +16,44 @@ const openai = new OpenAI();
 
 // const openai = new OpenAIApi(configuration);
 
-async function generateVisualFromQuote(quote, theme, formality) {
+async function generateVisualFromQuote(quote, theme, formality, color = "white") {
+    // if (!quote || !theme || !formality) {
+    //     throw new Error("Quote, theme, and formality are required parameters.");
+    // }
 
-    console.log(quote, theme, formality);
+    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
+
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o", // Ensure you are using the correct model
+        model: "gpt-4o",
         messages: [
             {
                 role: "system",
                 content: `
                     You are assisting with Blueberry AI, a web-based, AI-powered platform designed to transform quotes into visually engaging and easily understandable representations.
-    
-                    Task Instructions:
+
+                    Task:
                     - I will provide you with a quote, a theme, and a formality level.
-                    - Your goal is to extract key concepts that align with A, B, and C, ensuring they reflect the visual’s metaphorical meaning within the context of the provided theme.
-    
-                    Metaphor Framework:
-                    - A: The Undesired Initial State (before the transition).
-                    - B: The Desired End State (after the transition).
-                    - C: The Foundation or Bridge enabling the transition from A to B.
-    
+                    - Extract key concepts and align them with a metaphorical framework:
+
+                      Metaphor Framework:
+                      - A: The Undesired Initial State (before the transition).
+                      - B: The Desired End State (after the transition).
+                      - C: The Foundation or Bridge enabling the transition from A to B.
+
                     Guidelines:
-                    1. Use the theme as the guiding lens to determine the most meaningful interpretations of A, B, and C.
-                    2. Represent A, B, and C with a maximum of three words:
-                       - Compound phrases are acceptable if necessary (e.g., "X and Y").
-                       - Capitalize the first letter of each word.
-                    3. The chosen words should clearly convey the essence of the visual metaphor when presented alone, without additional context.
-                    4. The theme should strongly influence how you interpret the quote and select the key words.
-    
-                    Formality Levels:
-                    - **Neutral**: A balance between formal and informal language.
-                    - **Formal**: Professional and polished language.
-                    - **Informal**: Incorporate casual, modern slang (e.g., TikTok/Gen Z style).
-    
-                    Reminder:
-                    The theme is not just context; it is integral to your interpretation. The selected words must align with the theme and ensure the meaning of the visual resonates within that framework. Think deeply and select terms that effectively encapsulate the quote, metaphor, and theme.
+                    - Use the theme to interpret and extract meaningful representations of A, B, and C.
+                    - Represent A, B, and C with up to three words (capitalize the first letter of each word).
+                    - Adjust tone based on the formality level:
+                      - Neutral: Balanced.
+                      - Formal: Professional.
+                      - Informal: Casual, modern language.
+                    
+                    Ensure clarity and prioritize the essence of the visual metaphor.
                 `
             },
-            {
-                role: "user",
-                content: quote // Provide the quote dynamically
-            },
-            {
-                role: "user",
-                content: theme // Provide the theme dynamically
-            },
-            {
-                role: "user",
-                content: formality // Provide the formality level dynamically
-            }
+            { role: "user", content: quote },
+            { role: "user", content: `Theme: ${theme}` },
+            { role: "user", content: `Formality: ${formality}` }
         ],
         response_format: {
             type: "json_schema",
@@ -73,42 +62,25 @@ async function generateVisualFromQuote(quote, theme, formality) {
                 schema: {
                     type: "object",
                     properties: {
-                        subpart1: {
-                            type: "string", // A (Undesired Initial State)
-                            description: "Represents the Undesired Initial State (A). Capitalize the first letter of each word."
-                        },
-                        subpart2: {
-                            type: "string", // B (Desired End State)
-                            description: "Represents the Desired End State (B). Capitalize the first letter of each word."
-                        },
-                        subpart3: {
-                            type: "string", // C (Bridge)
-                            description: "Represents the Foundation or Bridge (C) enabling the transition. Capitalize the first letter of each word."
-                        }
+                        subpart1: { type: "string", description: "The undesired initial state (A)." },
+                        subpart2: { type: "string", description: "The desired end state (B)." },
+                        subpart3: { type: "string", description: "The bridge enabling the transition (C)." },
+                        summary: { type: "string", description: "The summarized quote." }
                     },
                     additionalProperties: false
                 }
             }
         }
     });
-    
 
-    console.log(completion.choices[0].message);
-    // console.log("message")
-
-    // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
+    const { subpart1, subpart2, subpart3, summary } = content;
 
-    const subpart1 = content.subpart1;
-    const subpart2 = content.subpart2;
-    const subpart3 = content.subpart3;
+    console.log("Extracted elements:", { subpart1, subpart2, subpart3, summary });
 
-    // Load the template image
     const templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/template.png');
     const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/output.png');
 
-    const lines = quote.match(/.{1,30}(\s|$)/g); // Split the quote into lines of max 30 characters
-    // Create an SVG overlay with the text
     const escapeHtml = (unsafe) => {
         return unsafe
             .replace(/&/g, '&amp;')
@@ -117,41 +89,73 @@ async function generateVisualFromQuote(quote, theme, formality) {
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     };
-    
+
+    const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
+
     const svgOverlay = `
         <svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
-            <text x="200" y="380" font-size="30" fill="white" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart1)}</text>
-            <text x="750" y="380" font-size="30" fill="white" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart2)}</text>
-            <text x="500" y="610" font-size="30" fill="white" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart3)}</text>
-            <text x="500" y="820" font-size="30" fill="white" text-anchor="middle" font-family="Roboto">Theme: ${theme}</text>
-            ${lines.map((line, index) => `<text x="500" y="${870 + index * 30}" font-size="30" fill="white" text-anchor="middle" font-family="Roboto" font-weight="700">${escapeHtml(line.trim())}</text>`).join('')}
+            <text x="200" y="380" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart1)}</text>
+            <text x="750" y="380" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart2)}</text>
+            <text x="500" y="610" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart3)}</text>
+            <text x="500" y="820" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">Theme: ${theme}</text>
+            ${lines.map((line, index) => `<text x="500" y="${870 + index * 30}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">${escapeHtml(line.trim())}</text>`).join('')}
         </svg>
     `;
-    try {
-        // Validate the SVG data
-        if (!svgOverlay || typeof svgOverlay !== 'string') {
-          throw new Error('Invalid SVG data');
-        }
-    
-        // Use sharp to composite the SVG overlay onto the template image
-        await sharp(templatePath)
-          .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
-          .toFile(outputPath);
-    
-        console.log('Image generated successfully:', outputPath);
-      } catch (error) {
-        console.error('Error generating visual:', error);
-        throw error;
-      }
 
-    return [outputPath, completion.choices[0].message, completion.model];
+    try {
+        if (!svgOverlay || typeof svgOverlay !== "string") {
+            throw new Error("Invalid SVG data.");
+        }
+
+        await sharp(templatePath)
+            .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
+            .toFile(outputPath);
+
+        console.log("Image generated successfully:", outputPath);
+        return [outputPath, completion.choices[0].message, completion.model];
+    } catch (error) {
+        console.error("Error generating visual:", error);
+        throw error;
+    }
 }
 
-async function generateVisualFromQuoteBraid(prompt) {
+async function generateVisualFromQuoteBraid(quote, theme, formality, color = "black") {
+    // if (!quote || !theme || !formality) {
+    //     throw new Error("Quote, theme, and formality are required parameters.");
+    // }
+
+    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-            { role: "system", content: "You are a tool designed to transform quotes into clear and concise visuals that enhance understanding and engagement. I will provide you with the meaning of a visual and a quote. Your task is to extract and distill the most relevant key words that align with the following framework:1)The metaphorical meaning of the visual is that three elements combine to produce a desired outcome.2)Each element should be captured in a maximum of two-three words (use 'and' if needed to connect concepts when a single word is insufficient).Your objective: Carefully analyze the meaning of the visual and the quote to identify and extract the most precise, meaningful, and concise key words that best represent:The first element,The second element,The third element. Outcome: The desired result or transformation these elements achieve when combined, keep the result to maximum two words. Think carefully, prioritize clarity, and ensure the key words encapsulate the essence of the quote and the visual's meaning. Capitilize the first letter of all words in A, B, and C. The quote is: " + prompt },
+            {
+                role: "system",
+                content: `
+                    You are a tool designed to transform quotes into clear and concise visuals that enhance understanding and engagement.
+
+                    Task:
+                    - I will provide you with a quote, a theme, and a formality level.
+                    - Extract and distill the most relevant key words into a framework:
+                      1) A metaphorical braid where three elements combine to produce a desired outcome.
+                      2) Each element is captured in up to three words, capitalized appropriately.
+                      3) The desired outcome is described in up to two words.
+
+                    Guidelines:
+                    - Use the theme as a guiding lens to analyze the quote and derive the elements.
+                    - Adjust your word choices to align with the formality level (neutral, formal, or informal).
+                    - The extracted elements should represent:
+                      - A: The first strand.
+                      - B: The second strand.
+                      - C: The third strand.
+                      - Outcome: The final transformation.
+
+                    Think deeply, ensure clarity, and prioritize the essence of the quote and visual metaphor.
+                `
+            },
+            { role: "user", content: quote },
+            { role: "user", content: `Theme: ${theme}` },
+            { role: "user", content: `Formality: ${formality}` }
         ],
         response_format: {
             type: "json_schema",
@@ -160,26 +164,11 @@ async function generateVisualFromQuoteBraid(prompt) {
                 schema: {
                     type: "object",
                     properties: {
-                        subpart1: {
-                            // description: "The first subpart of the quote",
-                            type: "string"
-                        },
-                        subpart2: {
-                            // description: "The second subpart of the quote",
-                            type: "string"
-                        },
-                        subpart3: {
-                            // description: "The third subpart of the quote",
-                            type: "string"
-                        },
-                        transformation: {
-                            // description: "The desired result or transformation these subparts achieve when combined",
-                            type: "string"
-                        },
-                        summary: {
-                            description: "The quote given.",
-                            type: "string"
-                        }
+                        subpart1: { type: "string", description: "The first strand of the braid" },
+                        subpart2: { type: "string", description: "The second strand of the braid" },
+                        subpart3: { type: "string", description: "The third strand of the braid" },
+                        transformation: { type: "string", description: "The final transformation" },
+                        summary: { type: "string", description: "The summarized quote" }
                     },
                     additionalProperties: false
                 }
@@ -187,61 +176,56 @@ async function generateVisualFromQuoteBraid(prompt) {
         }
     });
 
-    console.log(completion.choices[0].message);
-
-    // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
+    const { subpart1, subpart2, subpart3, transformation, summary } = content;
 
-    const subpart1 = content.subpart1;
-    const subpart2 = content.subpart2;
-    const subpart3 = content.subpart3;
-    const summary = content.summary;
-    const transformation = content.transformation;
+    console.log("Extracted elements:", { subpart1, subpart2, subpart3, transformation, summary });
 
-    // Load the template image
     const templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/braid.png');
     const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/braidoutput.png');
 
-    // Create an SVG overlay with the text
+    const escapeHtml = (unsafe) => {
+        return unsafe
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
     const svgOverlay = `
         <svg width="700" height="650" xmlns="http://www.w3.org/2000/svg">
-        <text x="300" y="150" font-size="20" fill="black" font-family="Roboto" text-anchor="middle">${subpart1}</text>
-        <text x="150" y="290" font-size="20" fill="black" font-family="Roboto" text-anchor="middle">${subpart2}</text>
-        <text x="150" y="500" font-size="20" fill="black" font-family="Roboto" text-anchor="middle">${subpart3}</text>
-        <text x="550" y="300" font-size="20" fill="black" font-family="Roboto" text-anchor="middle">${transformation}</text>
-        <text y="620" font-size="20" fill="black" font-family="Roboto" text-anchor="middle">
-            ${summary.split(' ').reduce((acc, word) => {
-            const lastLine = acc[acc.length - 1];
-            if (lastLine && (lastLine.length + word.length) < 60) {
-                acc[acc.length - 1] = lastLine + ' ' + word;
-            } else {
-                acc.push(word);
-            }
-            return acc;
-            }, []).map((line, index) => `<tspan x="350" dy="${index === 0 ? 0 : 25}" font-weight="700">${line.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</tspan>`).join('')}
-        </text>
+            <text x="300" y="150" font-size="20" fill="${color}" font-family="Roboto" text-anchor="middle">${escapeHtml(subpart1)}</text>
+            <text x="150" y="290" font-size="20" fill="${color}" font-family="Roboto" text-anchor="middle">${escapeHtml(subpart2)}</text>
+            <text x="150" y="500" font-size="20" fill="${color}" font-family="Roboto" text-anchor="middle">${escapeHtml(subpart3)}</text>
+            <text x="550" y="300" font-size="20" fill="${color}" font-family="Roboto" text-anchor="middle">${escapeHtml(transformation)}</text>
+            <text y="620" font-size="20" fill="${color}" font-family="Roboto" text-anchor="middle">
+                ${summary.split(' ').reduce((acc, word) => {
+                    const lastLine = acc[acc.length - 1];
+                    if (lastLine && (lastLine.length + word.length) < 60) {
+                        acc[acc.length - 1] = lastLine + ' ' + word;
+                    } else {
+                        acc.push(word);
+                    }
+                    return acc;
+                }, []).map((line, index) => `<tspan x="350" dy="${index === 0 ? 0 : 25}" font-weight="700">${escapeHtml(line.trim())}</tspan>`).join('')}
+            </text>
         </svg>
     `;
-    // Use sharp to composite the SVG overlay onto the template image
-    try {
-        // Validate the SVG data
-        if (!svgOverlay || typeof svgOverlay !== 'string') {
-          throw new Error('Invalid SVG data');
-        }
-    
-        // Use sharp to composite the SVG overlay onto the template image
-        await sharp(templatePath)
-          .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
-          .toFile(outputPath);
-    
-        console.log('Image generated successfully:', outputPath);
-      } catch (error) {
-        console.error('Error generating visual:', error);
-        throw error;
-      }
 
-    return [outputPath, completion.choices[0].message, completion.model];
+    try {
+        await sharp(templatePath)
+            .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
+            .toFile(outputPath);
+
+        console.log("Image generated successfully:", outputPath);
+        return [outputPath, completion.choices[0].message, completion.model];
+    } catch (error) {
+        console.error("Error generating visual:", error);
+        throw error;
+    }
 }
+
 
 async function generateVisualFromQuoteIceberg(prompt) {
     const completion = await openai.chat.completions.create({
@@ -583,28 +567,41 @@ async function generateVisualFromQuoteTetris(prompt, color) {
     return outputPath;
 }
 
-async function generateVisualFromQuoteFish(prompt, color) {
-    
-    if (color === '') {
-        color = 'green';
-        console.log("color is empty");
-    } 
+async function generateVisualFromQuoteFish(quote, theme, formality, color = "white") {
+    // if (!quote || !theme || !formality) {
+    //     throw new Error("Quote, theme, and formality are required parameters.");
+    // }
 
-    console.log(color);
-    
+    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
             {
                 role: "system",
                 content: `
-                    You are a specialized tool designed to transform quotes into clear, concise visuals that enhance understanding and engagement. I will provide you with the meaning of a visual and a quote. Your task is to: Extract the most relevant key concepts from the quote. Distill these concepts into a concise summary that can be read with a glance, ensuring alignment with the Metaphorical Meaning Visual: the tension and interplay between Individuality and conformity. Instructions: Prioritize clarity and relevance to ensure the summary encapsulates the quote's essence and align with the visual's intended meaning. The summary is no longer than 15 tokens. Think carefully about each concept.
+                    You are a specialized tool designed to transform quotes into clear, concise visuals that enhance understanding and engagement.
+
+                    Task:
+                    - Extract the most relevant key concepts from the provided quote.
+                    - Summarize these concepts to align with the metaphorical meaning of the visual: 
+                      **The tension and interplay between individuality and conformity.**
+                    - The summary should be concise (no longer than 15 tokens), insightful, and reflective of the quote's essence.
+
+                    Guidelines:
+                    - Use the provided theme and formality level to influence your interpretation.
+                    - The theme is essential to contextualizing the extracted insight.
+                    - Adjust the tone of the summary to match the formality level:
+                        - **Neutral**: A balance between formal and informal.
+                        - **Formal**: Polished and professional.
+                        - **Informal**: Incorporate casual or modern expressions.
+                    
+                    Prioritize clarity, relevance, and alignment with the visual's intended meaning.
                 `
             },
-            {
-                role: "user",
-                content: prompt
-            }
+            { role: "user", content: quote },
+            { role: "user", content: `Theme: ${theme}` },
+            { role: "user", content: `Formality: ${formality}` }
         ],
         response_format: {
             type: "json_schema",
@@ -614,8 +611,9 @@ async function generateVisualFromQuoteFish(prompt, color) {
                     type: "object",
                     properties: {
                         insight: {
-                            type: "string"
-                        },
+                            type: "string",
+                            description: "The distilled insight extracted from the quote. No more than 15 tokens."
+                        }
                     },
                     additionalProperties: false
                 }
@@ -623,50 +621,50 @@ async function generateVisualFromQuoteFish(prompt, color) {
         }
     });
 
-    console.log(completion.choices[0].message);
-
-    // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
+    const { insight } = content;
 
-    const insight = content.insight;
+    console.log("Extracted insight:", insight);
 
-    // Load the template image
     const templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/fish.png');
     const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/fishoutput.png');
 
-    // Split the quote into lines of max 30 characters
+    const escapeHtml = (unsafe) => {
+        return unsafe
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    // Split the insight into lines of up to 30 characters for better visualization
     const lines = insight.match(/.{1,30}(\s|$)/g);
 
     // Create an SVG overlay with the extracted text
     const svgOverlay = `
         <svg width="950" height="950" xmlns="http://www.w3.org/2000/svg">
             ${lines.map((line, index) => `
-                <text x="500" y="${220 + index * 60}" font-size="44" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">
-                    ${line.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                <text x="475" y="${220 + index * 60}" font-size="44" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">
+                    ${escapeHtml(line.trim())}
                 </text>
             `).join('')}    
         </svg>
     `;
 
     try {
-        // Validate the SVG data
-        if (!svgOverlay || typeof svgOverlay !== 'string') {
-            throw new Error("Invalid SVG data");
-        }
-
-        // Use sharp to composite the SVG overlay onto the template image
         await sharp(templatePath)
             .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
             .toFile(outputPath);
 
         console.log("Image generated successfully:", outputPath);
+        return [outputPath, completion.choices[0].message, completion.model];
     } catch (error) {
         console.error("Error generating insight visual:", error);
         throw error;
     }
-
-    return [outputPath, completion.choices[0].message, completion.model];
 }
+
 
 async function generateVisualFromQuoteDoor(prompt, color) {
 
@@ -752,20 +750,35 @@ async function generateVisualFromQuoteDoor(prompt, color) {
     return outputPath;
 }
 
-async function generateVisualFromQuoteNewton(prompt, color) {
+async function generateVisualFromQuoteNewton(quote, theme, formality, color = "white") {
+    // if (!quote || !theme || !formality) {
+    //     throw new Error("Quote, theme, and formality are required parameters.");
+    // }
+
+    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
+
     const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
             {
                 role: "system",
                 content: `
-                    Imagine you are a monk teaching a student. Convert this quote into a five word quote, ensure it makes sense.
+                    Imagine you are a wise monk teaching a student. Your task is to transform the provided quote into a concise and meaningful five-word statement. 
+
+                    Guidelines:
+                    - Ensure the five words convey the core essence of the original quote.
+                    - Consider the provided theme as context to guide your interpretation.
+                    - Adjust the tone of the statement to match the requested formality level:
+                        - **Neutral**: Balanced between formal and informal.
+                        - **Formal**: Polished and professional.
+                        - **Informal**: Casual, modern, and conversational.
+
+                    Prioritize clarity, depth, and alignment with the theme and formality level. The result should be insightful and reflective of the original quote.
                 `
             },
-            {
-                role: "user",
-                content: prompt
-            }
+            { role: "user", content: quote },
+            { role: "user", content: `Theme: ${theme}` },
+            { role: "user", content: `Formality: ${formality}` }
         ],
         response_format: {
             type: "json_schema",
@@ -775,8 +788,9 @@ async function generateVisualFromQuoteNewton(prompt, color) {
                     type: "object",
                     properties: {
                         insight: {
-                            type: "string"
-                        },
+                            type: "string",
+                            description: "A concise five-word transformation of the quote."
+                        }
                     },
                     additionalProperties: false
                 }
@@ -784,49 +798,47 @@ async function generateVisualFromQuoteNewton(prompt, color) {
         }
     });
 
-    console.log(completion.choices[0].message);
-
-    // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
+    const { insight } = content;
 
-    const insight = content.insight;
+    console.log("Extracted insight:", insight);
 
-    // Load the template image
     const templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/newton.png');
     const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/newtonoutput.png');
 
-    // Split the quote into lines of max 30 characters
+    const escapeHtml = (unsafe) => {
+        return unsafe
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    // Split the five-word statement into lines for better rendering
     const lines = insight.match(/.{1,40}(\s|$)/g);
 
-    // Create an SVG overlay with the extracted text
     const svgOverlay = `
         <svg width="950" height="950" xmlns="http://www.w3.org/2000/svg">
             ${lines.map((line, index) => `
-                <text x="500" y="${720 + index * 60}" font-size="20" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">
-                    ${line.trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                <text x="475" y="${220 + index * 60}" font-size="44" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">
+                    ${escapeHtml(line.trim())}
                 </text>
             `).join('')}    
         </svg>
     `;
 
     try {
-        // Validate the SVG data
-        if (!svgOverlay || typeof svgOverlay !== 'string') {
-            throw new Error("Invalid SVG data");
-        }
-
-        // Use sharp to composite the SVG overlay onto the template image
         await sharp(templatePath)
             .composite([{ input: Buffer.from(svgOverlay), top: 0, left: 0 }])
             .toFile(outputPath);
 
         console.log("Image generated successfully:", outputPath);
+        return [outputPath, completion.choices[0].message, completion.model];
     } catch (error) {
         console.error("Error generating insight visual:", error);
         throw error;
     }
-
-    return [outputPath, completion.choices[0].message, completion.model];
 }
 
 
@@ -907,11 +919,11 @@ router.route('/').post(async (req, res) => {
     
     // console.log(completion.choices[0].message);
 
-    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality);
+    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality, color);
     const imageBuffer = fs.readFileSync(outputPath);
     const imageBase64 = imageBuffer.toString('base64');
 
-    const [outputPathBraid, textBraid, modelBraid ] = await generateVisualFromQuoteBraid(prompt);
+    const [outputPathBraid, textBraid, modelBraid ] = await generateVisualFromQuoteBraid(prompt, theme, formality, color);
     const imageBufferBraid = fs.readFileSync(outputPathBraid);
     const imageBase64Braid = imageBufferBraid.toString('base64');
 
@@ -939,7 +951,7 @@ router.route('/').post(async (req, res) => {
     //     fishOutputPath = await generateVisualFromQuoteFish(prompt, "green");
     // }
 
-    const [fishOutputPath, textFish, modelFish] = await generateVisualFromQuoteFish(prompt, color);
+    const [fishOutputPath, textFish, modelFish] = await generateVisualFromQuoteFish(prompt, theme, formality, color);
     const fishImageBuffer = fs.readFileSync(fishOutputPath);
     const fishImageBase64 = fishImageBuffer.toString('base64');
 
@@ -947,7 +959,7 @@ router.route('/').post(async (req, res) => {
     // const doorImageBuffer = fs.readFileSync(doorOutputPath);
     // const doorImageBase64 = doorImageBuffer.toString('base64');
 
-    const [newtonOutputPath, textNewton, modelNewton] = await generateVisualFromQuoteNewton(prompt, "rgb(123, 104, 238)");
+    const [newtonOutputPath, textNewton, modelNewton] = await generateVisualFromQuoteNewton(prompt, theme, formality, color);
     const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
     const newtonImageBase64 = newtonImageBuffer.toString('base64');
 
