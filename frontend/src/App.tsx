@@ -7,6 +7,9 @@ import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+
 import {
   Select,
   SelectContent,
@@ -328,6 +331,14 @@ function App() {
               <SelectItem value="formal">Formal</SelectItem>
             </SelectContent>
           </Select>
+          <div className="flex items-center space-x-2">
+            <Switch id="airplane-mode" />
+            <Label htmlFor="airplane-mode">Display Quote</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch id="airplane-mode" />
+            <Label htmlFor="airplane-mode">Display Summary</Label>
+          </div>
           <Button className="bg-gray-500 text-white p-4 rounded-lg hover:bg-gray-600 transition duration-300" onClick={generateImage}>
             <RefreshCw className="w-5 h-5" />
           </Button>
@@ -358,7 +369,7 @@ function App() {
             {images.map((image) => (
               <Button
                 key={image.key}
-                className={`w-32 h-32 m-0 p-2 ${selectedImage === image.key ? 'border-4 border-blue-500' : ''}`}
+                className={`w-32 h-32 m-0 p-2 bg-white ${selectedImage === image.key ? 'border-4 border-blue-500' : ''}`}
                 onClick={() => setSelectedImage(image.key)}
               >
                 <img
@@ -385,13 +396,17 @@ function App() {
 
       <div className="flex justify-center items-center mt-8">
         <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-          <h3 className="text-xl font-semibold mb-4">Provide your Feedback</h3>
+          {/* <h3 className="text-xl font-semibold mb-4">Provide your Feedback</h3> */}
 
           {isSubmitted && (
             <div id="result" className="mt-4 text-green-600 text-lg font-bold" aria-live="polite">
               Thank you! You rated: <span id="submitted-rating">{submittedRating}</span> and <span id="submitted-rating">{submittedTextRating}</span> stars.
             </div>
           )}
+
+          <div id="rating-text" className="text-lg mb-4">
+            <strong>How does it look?</strong> {selectedRating} star{selectedRating > 1 ? 's' : ''}
+          </div>
 
           <div id="rating" className="flex space-x-2 mb-4">
             {[1, 2, 3, 4, 5].map((value) => (
@@ -409,8 +424,9 @@ function App() {
             ))}
           </div>
 
+
           <div id="rating-text" className="text-lg mb-4">
-            Visual Rating: {selectedRating} star{selectedRating > 1 ? 's' : ''}
+            <strong>Does it make sense?</strong> {textRating} star{textRating > 1 ? 's' : ''}
           </div>
 
           <div id="rating" className="flex space-x-2 mb-4">
@@ -429,15 +445,11 @@ function App() {
             ))}
           </div>
 
-          <div id="rating-text" className="text-lg mb-4">
-            Text Rating: {textRating} star{textRating > 1 ? 's' : ''}
-          </div>
-
           <textarea
             id="feedback-text"
             className="w-full p-2 mb-4 border border-gray-300 rounded-md"
             rows="4"
-            placeholder="Write your detailed feedback here..."
+            placeholder="Write details here. Dot points are good."
             value={feedbackText}
             onChange={(e) => setFeedbackText(e.target.value)}
           ></textarea>
