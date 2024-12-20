@@ -9,14 +9,15 @@ dotenv.config();
 const router = express.Router();
 
 import OpenAI from 'openai';
-import { transform } from 'typescript';
 // import text from 'body-parser/lib/types/text';
 
 const openai = new OpenAI();
 
 // const openai = new OpenAIApi(configuration);
 
-async function generateVisualFromQuote(quote, theme, formality, color = "white", style) {
+async function generateVisualFromQuote(options) {
+    let { quote, theme, formality, color, style, isQuoteDisplayed, isSummaryDisplayed } = options;
+
     // if (!quote || !theme || !formality) {
     //     throw new Error("Quote, theme, and formality are required parameters.");
     // }
@@ -24,10 +25,11 @@ async function generateVisualFromQuote(quote, theme, formality, color = "white",
         color = "white";
     }
 
-    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
+    console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, 
+        color: ${color}, style: ${style}`, isQuoteDisplayed, isSummaryDisplayed);
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
             {
                 role: "system",
@@ -81,8 +83,6 @@ async function generateVisualFromQuote(quote, theme, formality, color = "white",
 
     console.log("Extracted elements:", { subpart1, subpart2, subpart3, summary });
 
-    console.log("Style:", style);
-
     let templatePath;
     let yOffset = 0;
 
@@ -109,28 +109,37 @@ async function generateVisualFromQuote(quote, theme, formality, color = "white",
 
     const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
 
+    const fontPath = path.resolve('/workspaces/typescript-node-4/blueberry/backend/fonts/IndieFlower-Regular.ttf');
+    const fontData = fs.readFileSync(fontPath).toString('base64');
+
+    console.log("Font data loaded.");
+
     const svgOverlay = `
         <svg width="1000" height="1000" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <style type="text/css">
+                    @font-face {
+                        font-family: 'Indie Flower';
+                        src: url(data:font/ttf;base64,${fontData}) format('truetype');
+                    }
+                </style>
+            </defs>
             <!-- Top Left Text -->
-            <text x="250" y="${360 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart1)}</text>
+            <text x="250" y="${360 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Indie Flower">${escapeHtml(subpart1)}</text>
             
             <!-- Top Right Text -->
-            <text x="750" y="${360 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto">${escapeHtml(subpart2)}</text>
+            <text x="750" y="${360 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="'Indie Flower'">${escapeHtml(subpart2)}</text>
             
-            <!-- Center Text (Grind Mode) -->
-            <text x="500" y="${670 + yOffset}" font-size="35" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">${escapeHtml(subpart3)}</text>
-            
-            <!-- Theme Label -->
-            <text x="500" y="${770 + yOffset}" font-size="28" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="400">Theme: ${theme}</text>
+            <!-- Center Text (C) -->
+            <text x="500" y="${670 + yOffset}" font-size="35" fill="${color}" text-anchor="middle" font-family="'Indie Flower'" font-weight="700">${escapeHtml(subpart3)}</text>
             
             <!-- Bottom Bold Text -->
-            ${lines.map((line, index) => `
-                <text x="500" y="${810 + index * 40 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Roboto" font-weight="700">
+            ${isQuoteDisplayed ? lines.map((line, index) => `
+                <text x="500" y="${810 + index * 40 + yOffset}" font-size="30" fill="${color}" text-anchor="middle" font-family="Indie Flower" font-weight="700">
                     ${escapeHtml(line.trim())}
-                </text>`).join('')}
+                </text>`).join('') : ''}
         </svg>
     `;
-
 
     try {
         if (!svgOverlay || typeof svgOverlay !== "string") {
@@ -157,7 +166,7 @@ async function generateVisualFromQuoteBraid(quote, theme, formality, color = "bl
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
             {
                 role: "system",
@@ -213,8 +222,6 @@ async function generateVisualFromQuoteBraid(quote, theme, formality, color = "bl
     const { subpart1, subpart2, subpart3, transformation, summary } = content;
 
     console.log("Extracted elements:", { subpart1, subpart2, subpart3, transformation, summary });
-
-    console.log("Style:", style);
 
     let templatePath;
     let yOffset = 0;
@@ -295,7 +302,7 @@ async function generateVisualFromQuoteFish(quote, theme, formality, color = "whi
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, color: ${color}`);
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
             {
                 role: "system",
@@ -345,8 +352,6 @@ async function generateVisualFromQuoteFish(quote, theme, formality, color = "whi
     const { insight } = content;
 
     console.log("Extracted insight:", insight);
-
-    console.log("Style:", style);
 
     let templatePath;
     let yOffset = 0;
@@ -420,7 +425,7 @@ async function generateVisualFromQuoteNewton(quote, theme, keyword, formality, c
     console.log(`Processing quote: ${quote}, theme: ${theme}, formality: ${formality}, keyword: ${keyword}, color: ${color}`,);
 
     const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
             {
                 role: "system",
@@ -480,13 +485,10 @@ async function generateVisualFromQuoteNewton(quote, theme, keyword, formality, c
 
     console.log("Extracted insight:", insight);
 
-    console.log("Style:", style);
-
     let templatePath;
     let yOffset = 0;
 
     if (style === 'sketch') {
-        console.log("WEEEE");
         templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/Cradle-Trspt.png');
         yOffset = -80;
         color = "black";
@@ -586,12 +588,8 @@ async function generateThemes(prompt) {
         }
     });
 
-    console.log(completion.choices[0].message);
-
     // Parse the JSON content
     const content = JSON.parse(completion.choices[0].message.content);
-
-    console.log(content);
     return content;
 }
 
@@ -601,51 +599,73 @@ router.route('/').get((req, res) => {
 });
 
 router.route('/').post(async (req, res) => {
-  try {
-    const { prompt, theme, color, formality, style } = req.body;
 
-    const [outputPath, textBridge, modelBridge]  = await generateVisualFromQuote(prompt, theme, formality, color, style);
-    const imageBuffer = fs.readFileSync(outputPath);
-    const imageBase64 = imageBuffer.toString('base64');
+    try {
+        const { prompt, theme, color, formality, style, isQuoteDisplayed, isSummaryDisplayed } = req.body;
 
-    const [outputPathBraid, textBraid, modelBraid ] = await generateVisualFromQuoteBraid(prompt, theme, formality, color, style);
-    const imageBufferBraid = fs.readFileSync(outputPathBraid);
-    const imageBase64Braid = imageBufferBraid.toString('base64');
+        const options = {
+            quote: prompt,
+            theme: theme,
+            formality: formality,
+            color: color,
+            style: style,
+            isQuoteDisplayed: isQuoteDisplayed,
+            isSummaryDisplayed: isSummaryDisplayed
+        };
+        
+        console.log(`The body is: ${JSON.stringify(req.body)}`);
 
-    const [fishOutputPath, textFish, modelFish] = await generateVisualFromQuoteFish(prompt, theme, formality, color, style);
-    const fishImageBuffer = fs.readFileSync(fishOutputPath);
-    const fishImageBase64 = fishImageBuffer.toString('base64');
+        const visualPromises = [
+            generateVisualFromQuote(options),
+            generateVisualFromQuoteBraid(prompt, theme, formality, color, style),
+            generateVisualFromQuoteFish(prompt, theme, formality, color, style),
+            generateVisualFromQuoteNewton(prompt, theme, "", formality, color, style)
+        ];
 
-    const [newtonOutputPath, textNewton, modelNewton] = await generateVisualFromQuoteNewton(prompt, theme, "", formality, color, style);
-    const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
-    const newtonImageBase64 = newtonImageBuffer.toString('base64');
+        const results = await Promise.all(visualPromises);
 
-    res.status(200).json({ 
-        photo: imageBase64, 
-        braid: imageBase64Braid, 
-        fish: fishImageBase64, 
-        newton: newtonImageBase64,
-        textBridge: textBridge,
-        textBraid: textBraid,
-        textFish: textFish,
-        textNewton: textNewton,
-        modelBridge: modelBridge,
-        modelBraid: modelBraid,
-        modelFish: modelFish,
-        modelNewton: modelNewton
-    });
+        const [outputPath, textBridge, modelBridge] = results[0];
+        const [outputPathBraid, textBraid, modelBraid] = results[1];
+        const [fishOutputPath, textFish, modelFish] = results[2];
+        const [newtonOutputPath, textNewton, modelNewton] = results[3];
 
-    // res.status(200).json({ photo: image });
-  } catch (error) {
-    console.error(error);
-    // res.status(500).send(error?.response.data.error.message || 'Something went wrong');
-  }
+        const imageBuffer = fs.readFileSync(outputPath);
+        const imageBase64 = imageBuffer.toString('base64');
+
+        const imageBufferBraid = fs.readFileSync(outputPathBraid);
+        const imageBase64Braid = imageBufferBraid.toString('base64');
+
+        const fishImageBuffer = fs.readFileSync(fishOutputPath);
+        const fishImageBase64 = fishImageBuffer.toString('base64');
+
+        const newtonImageBuffer = fs.readFileSync(newtonOutputPath);
+        const newtonImageBase64 = newtonImageBuffer.toString('base64');
+
+        res.status(200).json({ 
+            photo: imageBase64, 
+            braid: imageBase64Braid, 
+            fish: fishImageBase64, 
+            newton: newtonImageBase64,
+            textBridge: textBridge,
+            textBraid: textBraid,
+            textFish: textFish,
+            textNewton: textNewton,
+            modelBridge: modelBridge,
+            modelBraid: modelBraid,
+            modelFish: modelFish,
+            modelNewton: modelNewton
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(error?.response.data.error.message || 'Something went wrong');
+    }
+
 });
 
 router.route('/theme').post(async (req, res) => {
     try {
         const { prompt } = req.body;
-        console.log(prompt);
     
         const content = await generateThemes(prompt);
 
