@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 import {
   Select,
@@ -28,12 +29,7 @@ function App() {
     prompt: '',
     photo: '',
     braid: '',
-    iceberg: '',
-    insight: '',
-    hunt: '',
-    tetris: '',
     fish: '',
-    door: '',
     newton: '',
     textBridge: '',
     textBraid: '',
@@ -54,12 +50,15 @@ function App() {
     theme3: '',
   });
 
-  const [selectedTheme, setSelectedTheme] = useState(''); 
+  const [selectedTheme, setSelectedTheme] = useState('lolz'); 
   const [selectedImage, setSelectedImage] = useState('photo');
 
   const [color, setColor] = useState('');
   const [formality, setFormality] = useState('');
   const [style, setStyle] = useState('');
+
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
+
 
 
   useEffect(() => {
@@ -69,13 +68,44 @@ function App() {
   }, [selectedTheme]);
 
 
+
+  const [reset, setReset] = useState(false);
+
+
+  const [isQuoteDisplayed, setIsQuoteDisplayed] = useState(false);
+  const [isSummaryDisplayed, setIsSummaryDisplayed] = useState(false);
+
+
+
   const [selectedRating, setSelectedRating] = useState(0);
   const [textRating, setTextRating] = useState(0);
   const [submittedRating, setSubmittedRating] = useState(0);
   const [submittedTextRating, setSubmittedTextRating] = useState(0);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [feedbackText, setFeedbackText] = useState('');
+  const [buttonText, setButtonText] = useState('Click me!');
+
+
+  useEffect(() => {
+    if (reset) {
+      // Clear the form
+      console.log("Resetting form");
+      setIsPopoverOpen(false)
+      setSubmittedRating(0);
+      setSubmittedTextRating(0);
+      setSelectedRating(0);
+      setTextRating(0);
+      setFeedbackText('');
+      setButtonText('Thank you! :)');
+      setTimeout(() => {
+        setButtonText('Click me!');
+
+
+      }, 3000);
+      // return () => clearTimeout(timer);
+      setReset(false);
+    }
+  }, [reset]);
 
   const handleStarClick = (rating: number) => {
     setSelectedRating(rating);
@@ -87,10 +117,12 @@ function App() {
 
 
   const handleSubmit = async () => {
+
+    setReset(true);
+
     if (selectedRating > 0) {
       setSubmittedRating(selectedRating);
       setSubmittedTextRating(textRating);
-      setIsSubmitted(true);
     } else {
       alert('Please select a rating before submitting.');
     }
@@ -112,9 +144,6 @@ function App() {
       model = form.modelNewton;
     }
 
-
-    console.log(text, selectedImage);
-
     const feedbackData = {
       quote: form.prompt,
       theme: selectedTheme,
@@ -129,8 +158,6 @@ function App() {
       model: model,
     };
 
-    console.log(JSON.stringify(feedbackData));
-    console.log("Attempting to submit feedback");
 
 
     try {
@@ -150,6 +177,8 @@ function App() {
     } catch (error) {
       console.error('There was a problem with the submission:', error);
     }
+
+
   };
 
   const handleButtonClick = (theme: string) => {
@@ -184,12 +213,16 @@ function App() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme, color: color, formality: formality, style: style }),  
+          body: JSON.stringify({ prompt: form.prompt, theme: selectedTheme, color: color, 
+            formality: formality, style: style, isQuoteDisplayed: isQuoteDisplayed, 
+            isSummaryDisplayed: isSummaryDisplayed
+
+           }),  
         });
         const data = await response.json();
         setForm({ 
-          ...form, photo: `data:image/jpeg;base64,${data.photo}`, braid: `data:image/jpeg;base64,${data.braid}`, iceberg: `data:image/jpeg;base64,${data.iceberg}`, insight: `data:image/jpeg;base64,${data.insight}`, hunt: `data:image/jpeg;base64,${data.hunt}`,
-          tetris: `data:image/jpeg;base64,${data.tetris}`, fish: `data:image/jpeg;base64,${data.fish}`, door: `data:image/jpeg;base64,${data.door}`, newton: `data:image/jpeg;base64,${data.newton}`,
+          ...form, photo: `data:image/jpeg;base64,${data.photo}`, braid: `data:image/jpeg;base64,${data.braid}`, 
+          fish: `data:image/jpeg;base64,${data.fish}`, newton: `data:image/jpeg;base64,${data.newton}`,
           textBridge: data.textBridge, textBraid: data.textBraid, textFish: data.textFish, textNewton: data.textNewton,
           modelBridge: data.modelBridge, modelBraid: data.modelBraid, modelFish: data.modelFish, modelNewton: data.modelNewton,
         });  
@@ -202,7 +235,7 @@ function App() {
   }
 
   const generateTheme = async () => {
-    console.log("Generating Image");
+    console.log("Generating Theme");
     if (form.prompt) {
       try {
         setGeneratingTheme(true);
@@ -225,6 +258,7 @@ function App() {
         setGeneratingTheme(false);
       }
     }
+    
   }
 
   const images = [
@@ -239,7 +273,7 @@ function App() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
     <div className="w-full bg-violet-200 p-4 flex flex-col justify-center items-center">
       <img src="/src/assets/image.png" alt="Banner Image" className="h-16 mb-4" />
-      <h1 className="text-3xl font-bold text-gray-800">Generate Beautiful Visuals From Text</h1>
+      <h1 className="text-3xl font-bold text-gray-800">Create Beautiful Visuals</h1>
     </div>
       <div className="w-full max-w-xl mt-3">
         <form className="flex items-center space-x-4 p-2">
@@ -260,33 +294,34 @@ function App() {
             className="bg-blue-500 text-white p-4 text-lg rounded-lg hover:bg-blue-600 transition duration-300"
             onClick={generateTheme}
           >
-            {generatingTheme ? 'Generating...' : 'Generate'}
+            {generatingTheme ? 'Generating...' : 'Generate Themes'}
           </Button>
         </form>
       </div>
 
-      <div className="flex flex-col items-center space-y-4 mt-4">
-        <div className="flex space-x-4">
-          <Button
-            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme1)}
-          >
-            {themes.theme1 || 'Perspective 1'}
-          </Button>
-          <Button
-            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme2)}
-          >
-            {themes.theme2 || 'Perspective 2'}
-          </Button>
-          <Button
-            className="bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300"
-            onClick={() => handleButtonClick(themes.theme3)}
-          >
-            {themes.theme3 || 'Perspective 3'}
-          </Button>
-        </div>
+
+    <div className="flex flex-col items-center space-y-4 mt-4">
+      <div className="flex space-x-4">
+        <Button
+          className={`bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300 ${selectedTheme === themes.theme1 ? 'ring-4 ring-violet-500' : ''}`}
+          onClick={() => handleButtonClick(themes.theme1)}
+        >
+          {themes.theme1 || 'Theme 1'}
+        </Button>
+        <Button
+          className={`bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300 ${selectedTheme === themes.theme2 ? 'ring-4 ring-violet-500' : ''}`}
+          onClick={() => handleButtonClick(themes.theme2)}
+        >
+          {themes.theme2 || 'Theme 2'}
+        </Button>
+        <Button
+          className={`bg-violet-300 text-white py-6 px-10 text-md rounded-lg hover:bg-purple-400 transition duration-300 ${selectedTheme === themes.theme3 ? 'ring-4 ring-violet-500' : ''}`}
+          onClick={() => handleButtonClick(themes.theme3)}
+        >
+          {themes.theme3 || 'Theme 3'}
+        </Button>
       </div>
+    </div>
 
       <div className="flex mt-6">
         <div className="flex flex-col gap-4 p-4">
@@ -305,10 +340,12 @@ function App() {
               <SelectValue placeholder="Text Colour" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="gray">Gray</SelectItem>
               <SelectItem value="blue">Blue</SelectItem>
               <SelectItem value="red">Red</SelectItem>
               <SelectItem value="green">Green</SelectItem>
-              <SelectItem value="rgb(123, 104, 238)">Gradient</SelectItem>
+              <SelectItem value="black">Black</SelectItem>
+              <SelectItem value="white">White</SelectItem>
             </SelectContent>
           </Select>
           <Select>
@@ -331,14 +368,24 @@ function App() {
               <SelectItem value="formal">Formal</SelectItem>
             </SelectContent>
           </Select>
+
           <div className="flex items-center space-x-2">
-            <Switch id="airplane-mode" />
-            <Label htmlFor="airplane-mode">Display Quote</Label>
+            <Switch 
+              id="display-quote" 
+              onCheckedChange={() => setIsQuoteDisplayed(!isQuoteDisplayed)} 
+              checked={isQuoteDisplayed}
+            />
+            <Label htmlFor="display-quote">Display Quote</Label>
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch id="airplane-mode" />
-            <Label htmlFor="airplane-mode">Display Summary</Label>
-          </div>
+          {/* <div className="flex items-center space-x-2">
+            <Switch 
+              id="display-summary" 
+              onCheckedChange={() => setIsSummaryDisplayed(!isSummaryDisplayed)} 
+              checked={isSummaryDisplayed}
+            />
+            <Label htmlFor="display-summary">Display Summary</Label>
+          </div> */}
+
           <Button className="bg-gray-500 text-white p-4 rounded-lg hover:bg-gray-600 transition duration-300" onClick={generateImage}>
             <RefreshCw className="w-5 h-5" />
           </Button>
@@ -386,86 +433,105 @@ function App() {
 
       <div className="flex space-x-4 mt-4">
         <Button
-          className="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          variant="outline"
+          className="bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
           onClick={handleSave}
         >
-          Save
+          Save Image
         </Button>
 
-      </div>
 
-      <div className="flex justify-center items-center mt-8">
-        <div className="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
-          {/* <h3 className="text-xl font-semibold mb-4">Provide your Feedback</h3> */}
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline">{buttonText}</Button>
+          </PopoverTrigger>
+          
+          <PopoverContent className="w-80">
+            <div className="grid gap-4">
+              {/* <div className="space-y-2">
+                <h4 className="font-medium leading-none">Dimensions</h4>
+                <p className="text-sm text-muted-foreground">
+                  Set the dimensions for the layer.
+                </p>
+              </div> */}
+              <div className="grid gap-2">
 
-          {isSubmitted && (
-            <div id="result" className="mt-4 text-green-600 text-lg font-bold" aria-live="polite">
-              Thank you! You rated: <span id="submitted-rating">{submittedRating}</span> and <span id="submitted-rating">{submittedTextRating}</span> stars.
+                <div className="flex flex-col space-y-6">
+                  <div className="flex flex-col space-y-4">
+                    <div id="rating-text" className="text-lg font-bold">
+                      How does it look?
+                    </div>
+
+                    <div id="rating" className="flex space-x-2 mb-4">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <svg
+                          key={value}
+                          className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${selectedRating >= value ? 'text-yellow-400' : ''}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          onClick={() => handleStarClick(value)}
+                          aria-label={`${value} star${value > 1 ? 's' : ''}`}
+                          role="button"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
+                        </svg>
+                      ))}
+                    </div>
+
+                    <div id="rating-text" className="text-lg font-bold">
+                      Does it make sense?
+                    </div>
+
+                    <div id="rating" className="flex space-x-2 mb-4">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <svg
+                          key={value}
+                          className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${textRating >= value ? 'text-yellow-400' : ''}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          onClick={() => handleTextStarClick(value)}
+                          aria-label={`${value} star${value > 1 ? 's' : ''}`}
+                          role="button"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Textarea
+                    id="feedback-text"
+                    className="w-full p-4 border border-gray-300 rounded-md"
+                    rows="4"
+                    placeholder="Write details here. Dot points are good."
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                  />
+
+                  <div className="text-sm text-muted-foreground" style={{ fontSize: '0.75rem' }}>
+                    You can minimize this popover and your ratings will still be here. Click submit when you're ready.
+                  </div>
+
+                  <Button
+                    id="submit-btn"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                    onClick={handleSubmit}
+                    disabled={selectedRating === 0 || textRating === 0 || selectedTheme === 'lolz'}
+                  >
+                    Submit Rating
+                  </Button>
+                </div>
+              </div>
             </div>
-          )}
+          </PopoverContent>
+        </Popover>
 
-          <div id="rating-text" className="text-lg mb-4">
-            <strong>How does it look?</strong> {selectedRating} star{selectedRating > 1 ? 's' : ''}
-          </div>
+        
 
-          <div id="rating" className="flex space-x-2 mb-4">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <svg
-                key={value}
-                className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${selectedRating >= value ? 'text-yellow-400' : ''}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                onClick={() => handleStarClick(value)}
-                aria-label={`${value} star${value > 1 ? 's' : ''}`}
-                role="button"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
-              </svg>
-            ))}
-          </div>
-
-
-          <div id="rating-text" className="text-lg mb-4">
-            <strong>Does it make sense?</strong> {textRating} star{textRating > 1 ? 's' : ''}
-          </div>
-
-          <div id="rating" className="flex space-x-2 mb-4">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <svg
-                key={value}
-                className={`w-8 h-8 text-gray-400 hover:text-yellow-400 cursor-pointer ${textRating >= value ? 'text-yellow-400' : ''}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                onClick={() => handleTextStarClick(value)}
-                aria-label={`${value} star${value > 1 ? 's' : ''}`}
-                role="button"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.95 4.146.018c.958.004 1.355 1.226.584 1.818l-3.36 2.455 1.287 3.951c.3.922-.756 1.688-1.541 1.125L10 13.011l-3.353 2.333c-.785.563-1.841-.203-1.541-1.125l1.287-3.951-3.36-2.455c-.77-.592-.374-1.814.584-1.818l4.146-.018 1.286-3.95z" />
-              </svg>
-            ))}
-          </div>
-
-          <textarea
-            id="feedback-text"
-            className="w-full p-2 mb-4 border border-gray-300 rounded-md"
-            rows="4"
-            placeholder="Write details here. Dot points are good."
-            value={feedbackText}
-            onChange={(e) => setFeedbackText(e.target.value)}
-          ></textarea>
-
-          <button
-            id="submit-btn"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-            onClick={handleSubmit}
-            disabled={selectedRating === 0 || textRating === 0}
-          >
-            Submit Rating
-          </button>
-
-
-        </div>
       </div>
+
+      <div className="mb-6"></div> {/* Add this line to create space at the bottom */}
+
 
     </div>
   );
