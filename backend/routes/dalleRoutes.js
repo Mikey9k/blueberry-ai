@@ -66,41 +66,26 @@ async function generateVisualFromQuote(options) {
             {
                 role: "system",
                 content: `
-                    Context: 
-
-                    - You are an AI-powered platform designed to transform quotes into visually engaging and easily understandable representations.
-
-                    Metaphorical Frameworks: 
-
-                   
-                    - **Transformation**: Represents a journey of personal growth or evolution.
-                    
+                    You are assisting with Blueberry AI, a web-based, AI-powered platform designed to transform quotes into visually engaging and easily understandable representations.
 
                     Task:
+                    - I will provide you with a quote, a theme, and a formality level.
+                    - Extract key concepts and align them with a metaphorical framework:
 
-                    - You will be provided quote, a theme, and a formality level.
-                    - Use the theme as a guiding lens to analyze and distill the essence of the quote based on the metaphorical framework.
-                    - Output the results as:
-                        - A: The Undesired Initial State (before the transition)
-                        - B: The Desired End State (after the transitionn)
-                        - C: The Bridge enabling the transition from A to B.
-                        
+                      Metaphor Framework:
+                      - A: The Undesired Initial State (before the transition).
+                      - B: The Desired End State (after the transition).
+                      - C: The Foundation or Bridge enabling the transition from A to B.
 
                     Guidelines:
-
-                    - Use the inteprepretation to extract meaningful representations of A, B, and C
-                    - Represent A, B, and C with a key word or phrase (use a maximum of 5 output tokens).
-                    - Replace overly figurative terms with more direct ,thematic or metaphorical synonyms where possible.
-                    - Focus on clarity and grammatical correctness: , Use noun phrases with appropriate modifiers, Avoid reversing natural word order or leaving phrases incomplete.
-                    - All outputs must be grammatically correct, using natural word order and proper modifiers
-
-                    Adjust tone based on the formality level:
+                    - Use the theme to interpret and extract meaningful representations of A, B, and C.
+                    - Represent A, B, and C with up to three words (capitalize the first letter of each word).
+                    - Adjust tone based on the formality level:
+                      - Neutral: Balanced.
+                      - Formal: Professional.
+                      - Informal: Casual, modern language. Gen Z Slang. TikTok 2022 Language.
                     
-                    - Neutral: Balanced.
-                    - Formal: Professional.
-                    - Informal: Very casual, modern language. Use slang and contractions.
-
-                    Ensure clarity and prioritize the essence of the visual metaphor. Think carefully. 
+                    Ensure clarity and prioritize the essence of the visual metaphor.
                 `
             },
             { role: "user", content: quote },
