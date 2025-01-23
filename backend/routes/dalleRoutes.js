@@ -134,23 +134,23 @@ async function generateVisualFromQuote(options) {
     let yOffset = 0;
 
     // if (style === 'sketch') {
-    //     templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/Bridge-Trspt-8.png');
+    //     templatePath = path.join('Bridge-Trspt-8.png');
     //     yOffset = -80;
 
     //     if (color === "white") {
     //         color = "black";
     //     }
     // } else {
-    //     templatePath = path.join('/workspaces/typescript-node-4/blueberry/backend/template.png'); // Default template
+    //     templatePath = path.join('template.png'); // Default template
     // }
-    // const outputPath = path.join('/workspaces/typescript-node-4/blueberry/backend/output.png');
+    // const outputPath = path.join('output.png');
 
     // Three base templates:
     const templatePaths = 
         [
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Sketch_200_Bridge-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/BlueP_200_Bridge-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Min_B_200_Bridge-72dpi.png')
+            path.join('Sketch_200_Bridge-72dpi.png'),
+            path.join('BlueP_200_Bridge-72dpi.png'),
+            path.join('Min_B_200_Bridge-72dpi.png')
         ]
 
 
@@ -165,7 +165,7 @@ async function generateVisualFromQuote(options) {
 
     const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
 
-    const fontPath = path.resolve('/workspaces/typescript-node-4/blueberry/backend/fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
     let fontData;
     // Check if the file exists
     if (fs.existsSync(fontPath)) {
@@ -240,7 +240,7 @@ async function generateVisualFromQuote(options) {
 
         // Generate for each template
         const outputPaths = templatePaths.map((_, i) =>
-            path.join('/workspaces/typescript-node-4/blueberry/backend', `bridge-${i}.png`)
+            path.join('', `bridge-${i}.png`)
         );
 
         await Promise.all(
@@ -373,9 +373,9 @@ async function generateVisualFromQuoteBraid(options) {
     // 3. Prepare image templates (as in 'generateVisualFromQuote')
     //    Here, we're using multiple template paths for various styles or versions
     const templatePaths = [
-        path.join('/workspaces/typescript-node-4/blueberry/backend/Sketch_200_Braid-72dpi.png'),
-        path.join('/workspaces/typescript-node-4/blueberry/backend/BlueP_200_Braid-72dpi.png'),
-        path.join('/workspaces/typescript-node-4/blueberry/backend/Min_B_200_Braid-72dpi.png')
+        path.join('Sketch_200_Braid-72dpi.png'),
+        path.join('BlueP_200_Braid-72dpi.png'),
+        path.join('Min_B_200_Braid-72dpi.png')
     ];
 
     // 4. Helper function to escape HTML
@@ -392,7 +392,7 @@ async function generateVisualFromQuoteBraid(options) {
     const lines = quote ? (quote.match(/.{1,30}(\s|$)/g) || []) : [];
 
     // 5. Load custom font if needed
-    const fontPath = path.resolve('/workspaces/typescript-node-4/blueberry/backend/fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
     let fontData;
     if (fs.existsSync(fontPath)) {
         fontData = fs.readFileSync(fontPath).toString('base64');
@@ -514,7 +514,7 @@ async function generateVisualFromQuoteBraid(options) {
         // 7. Composite the text overlay onto each template
         //    Example: first template with the chosen color, subsequent with white
         const outputPaths = templatePaths.map((_, i) =>
-            path.join('/workspaces/typescript-node-4/blueberry/backend', `braid-${i}.png`)
+            path.join('', `braid-${i}.png`)
         );
 
         // Create an array of overlay buffers for easier usage
@@ -642,14 +642,14 @@ Prioritize clarity, relevance, and alignment with the visual's intended meaning.
     //    You can adjust/replace these with your actual fish-related image files.
     const templatePaths = 
         [
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Sketch_200_Fish-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/BlueP_200_Fish-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Min_B_200_Fish-72dpi.png')
+            path.join('Sketch_200_Fish-72dpi.png'),
+            path.join('BlueP_200_Fish-72dpi.png'),
+            path.join('Min_B_200_Fish-72dpi.png')
         ]
 
     // 7. Pre-generate output paths for each template
     const outputPaths = templatePaths.map((_, i) => 
-        path.join('/workspaces/typescript-node-4/blueberry/backend', `fishOutput-${i}.png`)
+        path.join('', `fishOutput-${i}.png`)
     );
 
     // 8. Utility function to escape HTML
@@ -667,7 +667,7 @@ Prioritize clarity, relevance, and alignment with the visual's intended meaning.
     const insightLines = insight ? insight.match(/.{1,25}(\s|$)/g) || [] : [];
 
     // 10. (Optional) Load your custom font if you have one
-    const fontPath = path.resolve('/workspaces/typescript-node-4/blueberry/backend/fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
     let fontData = null;
     if (fs.existsSync(fontPath)) {
         fontData = fs.readFileSync(fontPath).toString('base64');
@@ -924,9 +924,9 @@ async function generateVisualFromQuoteNewton(options) {
     //    For illustration, we use two template images. Adjust as needed.
     const templatePaths = 
         [
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Sketch_200_Cradle-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/BlueP_200_Cradle-72dpi.png'),
-            path.join('/workspaces/typescript-node-4/blueberry/backend/Min_B_200_Cradle-72dpi.png')
+            path.join('Sketch_200_Cradle-72dpi.png'),
+            path.join('BlueP_200_Cradle-72dpi.png'),
+            path.join('Min_B_200_Cradle-72dpi.png')
         ]
 
     // 4) Utility to escape any HTML characters in the text
@@ -1003,7 +1003,7 @@ async function generateVisualFromQuoteNewton(options) {
         //    Following the same logic as the bridging code: 
         //    one variant might use the original color, the other might invert text color, etc.
         const outputPaths = templatePaths.map((_, i) =>
-            path.join("/workspaces/typescript-node-4/blueberry/backend", `newtonoutput-${i}.png`)
+            path.join("", `newtonoutput-${i}.png`)
         );
 
         await Promise.all(
