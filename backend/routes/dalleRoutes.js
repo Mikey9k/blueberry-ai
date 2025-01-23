@@ -150,7 +150,7 @@ async function generateVisualFromQuote(options) {
 
     const lines = quote.match(/.{1,30}(\s|$)/g) || []; // Handle cases where quote is short or empty
 
-    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/Pangolin.ttf');
     let fontData;
     // Check if the file exists
     if (fs.existsSync(fontPath)) {
@@ -165,7 +165,7 @@ async function generateVisualFromQuote(options) {
             <defs>
                 <style type="text/css">
                     @font-face {
-                        font-family: 'Indie Flower';
+                        font-family: 'Pangolin';
                         src: url(data:font/ttf;base64,${fontData}) format('truetype');
                     }
                 </style>
@@ -192,7 +192,7 @@ async function generateVisualFromQuote(options) {
         <defs>
             <style type="text/css">
                 @font-face {
-                    font-family: 'Indie Flower';
+                    font-family: 'Pangolin';
                     src: url(data:font/ttf;base64,${fontData}) format('truetype');
                 }
             </style>
@@ -377,7 +377,7 @@ async function generateVisualFromQuoteBraid(options) {
     const lines = quote ? (quote.match(/.{1,30}(\s|$)/g) || []) : [];
 
     // 5. Load custom font if needed
-    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/Pangolin.ttf');
     let fontData;
     if (fs.existsSync(fontPath)) {
         fontData = fs.readFileSync(fontPath).toString('base64');
@@ -394,7 +394,7 @@ async function generateVisualFromQuoteBraid(options) {
             <defs>
                 <style type="text/css">
                     @font-face {
-                        font-family: 'Indie Flower';
+                        font-family: 'Pangolin';
                         src: url(data:font/ttf;base64,${fontData}) format('truetype');
                     }
                 </style>
@@ -448,7 +448,7 @@ async function generateVisualFromQuoteBraid(options) {
             <defs>
                 <style type="text/css">
                     @font-face {
-                        font-family: 'Indie Flower';
+                        font-family: 'Pangolin';
                         src: url(data:font/ttf;base64,${fontData}) format('truetype');
                     }
                 </style>
@@ -652,7 +652,7 @@ Prioritize clarity, relevance, and alignment with the visual's intended meaning.
     const insightLines = insight ? insight.match(/.{1,25}(\s|$)/g) || [] : [];
 
     // 10. (Optional) Load your custom font if you have one
-    const fontPath = path.resolve('fonts/IndieFlower-Regular.ttf');
+    const fontPath = path.resolve('fonts/Pangolin.ttf');
     let fontData = null;
     if (fs.existsSync(fontPath)) {
         fontData = fs.readFileSync(fontPath).toString('base64');
@@ -672,7 +672,7 @@ Prioritize clarity, relevance, and alignment with the visual's intended meaning.
             <defs>
                 <style type="text/css">
                     @font-face {
-                        font-family: 'Indie Flower';
+                        font-family: 'Pangolin';
                         src: url(data:font/ttf;base64,${fontData}) format('truetype');
                     }
                 </style>
@@ -725,7 +725,7 @@ Prioritize clarity, relevance, and alignment with the visual's intended meaning.
             <defs>
                 <style type="text/css">
                     @font-face {
-                        font-family: 'Indie Flower';
+                        font-family: 'Pangolin';
                         src: url(data:font/ttf;base64,${fontData}) format('truetype');
                     }
                 </style>
